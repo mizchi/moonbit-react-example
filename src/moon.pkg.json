@@ -1,0 +1,17 @@
+{
+  "is-main": true,
+  "import": [
+    "mizchi/js",
+    "mizchi/js/async",
+    "mizchi/js/dom",
+    "mizchi/js/npm/react",
+    "mizchi/js/npm/react/element",
+    "mizchi/js/npm/react_dom",
+    "mizchi/js/npm/react_router"
+  ],
+  "test-import": [
+    "mizchi/js/npm/react_testing_library",
+    "mizchi/js/node/test"
+  ],
+  "warn-list": "-1"
+}

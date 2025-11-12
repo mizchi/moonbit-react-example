@@ -1,0 +1,8 @@
+{
+  "name": "mizchi/react_sample_app",
+  "deps": {
+    "mizchi/js": "0.2.0"
+  },
+  "source": "src",
+  "preferred-target": "js"
+}
