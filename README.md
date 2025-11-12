@@ -14,6 +14,8 @@ This is sample react project with [mizchi/js.mbt](https://github.com/mizchi/js.m
 
 ## Develop
 
+Install moonbit https://www.moonbitlang.com/download/
+
 ```bash
 # clone this
 $ pnpm install
