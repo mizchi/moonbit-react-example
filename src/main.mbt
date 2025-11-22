@@ -12,32 +12,25 @@ using @react {
   use_context,
   use_reducer,
   create_context,
-  init_react,
 }
 
 ///|
-using @react_dom {init_react_client}
+using @react_dom_client {import_react_dom_client}
 
 ///|
-using @react_router {init_react_router, router_provider}
+using @react_router {init_react_router_async, router_provider}
 
 ///|
-using @js {log, js}
+using @js {log, sleep, run_async}
 
 ///|
-using @async {type Promise, sleep, run_async}
-
-///|
-using @element {
+using @react_element {
   h1,
   h2,
   hr,
   ul,
-  li,
   form,
   input,
-  main_,
-  section,
   div,
   textarea,
   svg,
@@ -81,7 +74,7 @@ fn use_myctx() -> MyContextProps {
 ///|
 fn ctx_consumer(_ : EmptyProps) -> @react.Element {
   let ctx_value = use_myctx()
-  h("div", class="context-value", ["Context value: \{ctx_value.v}"])
+  div(["Context value: \{ctx_value.v}"], class="context-value")
 }
 
 ///|
@@ -101,14 +94,10 @@ fn async_counter(_ : EmptyProps) -> @react.Element {
     }),
     [count],
   )
-  h("button", on_click~, [
-    "Async Count: \{count}",
-    if is_pending {
-      " (Updating...)"
-    } else {
-      ""
-    },
-  ])
+  @react_element.button(
+    ["Async Count: \{count}", if is_pending { " (Updating...)" } else { "" }],
+    on_click~,
+  )
 }
 
 ///|
@@ -120,7 +109,9 @@ priv struct AppProps {
 ///|
 fn app(props : AppProps) -> @react.Element {
   let (cnt, set_cnt) = use_state(props.x)
-  let textarea_ref : @react.ReactRef[@dom.Element] = @react.use_ref(None)
+  let textarea_ref : @react.ReactRef[@dom.HTMLTextAreaElement] = @react.use_ref(
+    None,
+  )
   let handler = use_callback(_ => set_cnt(cnt + 1), [cnt])
   use_effect(
     () => {
@@ -133,8 +124,8 @@ fn app(props : AppProps) -> @react.Element {
     () => {
       run_async(async fn() noraise {
         sleep(300)
-        if textarea_ref.current() is Some(textarea) {
-          textarea.focus()
+        if textarea_ref.get_current() is Some(textarea) {
+          textarea.to_js().call("focus", []) |> ignore
         }
         log("Starting async operation...")
       })
@@ -145,8 +136,8 @@ fn app(props : AppProps) -> @react.Element {
   let (input_text, set_text) = use_state("")
   let on_change = use_callback(
     (e : @dom.ChangeEvent) => {
-      let target = e.target()
-      let value : String = target["value"].cast()
+      let target = e.target().to_js()
+      let value : String = target.get("value") |> @js.unsafe_cast
       set_text(value)
       log("Textarea changed: \{value}")
     },
@@ -165,12 +156,13 @@ fn app(props : AppProps) -> @react.Element {
         fragment([h("h1", ["xxx"])]),
         div(id="textarea-container", [
           textarea(
+            [],
             id="my-textarea",
             on_change~,
-            attributes={ "rows": js(4), "cols": js(40) },
+            rows=4,
+            columns=40,
             ref_=textarea_ref,
             value=input_text,
-            [],
           ),
           div(class="textarea-value", ["Textarea value: \{input_text}"]),
         ]),
@@ -184,18 +176,19 @@ fn app(props : AppProps) -> @react.Element {
         c(async_counter, EmptyProps::default()),
         hr(),
         form(
-          method_="post",
-          style={ "marginTop": "10px" },
-          enc_type="application/x-www-form-urlencoded",
-          action=form => {
-            log(form)
-            let v : String = form.get("username").cast()
-            log("Username: \{v}")
-          },
           [
             input(type_="text", name="username"),
             input(type_="submit", value="Submit"),
           ],
+          method_="post",
+          style={ "marginTop": "10px" },
+          enc_type="application/x-www-form-urlencoded",
+          action=form => {
+            log(form.to_js())
+            let v : String = form.to_js().call("get", ["username"])
+              |> @js.unsafe_cast
+            log("Username: \{v}")
+          },
         ),
         svg(width=500, height=100, [
           circle(cx=50, cy=50, r=40, stroke="black", stroke_width=3, fill="red"),
@@ -218,30 +211,33 @@ fn app(props : AppProps) -> @react.Element {
 
 ///|
 fn main {
-  guard @dom.document().as_element().query_selector("#app") is Some(app_root)
-  run_async(() => try {
-    let client = init_react_client()
-    let _ = init_react_router()
-    // TODO: use async init later
-    init_myctx()
+  guard @dom.document().getElementById("app") is Some(app_root)
+  run_async(async fn() noraise {
+    try {
+      @react.init_react_async()
+      let client = import_react_dom_client().wait()
+      init_react_router_async()
+      // TODO: use async init later
+      init_myctx()
 
-    // Entrypoint
-    let home : @react.ComponentFn[@react_router.RouteProps] = _props => c(app, {
-      x: 42,
-      items: ["Item 1", "Item 2", "Item 3"],
-    })
-    let routes = @react_router.create_browser_router([
-      Component(path="/", component=home),
-      Element(
-        path="/about",
-        element=h("div", [
-          "About page",
-          @react_router.link(to="/", ["Go to Top"]),
-        ]),
-      ),
-    ])
-    client.create_root(app_root).render(router_provider(routes))
-  } catch {
-    e => @js.log(e)
+      // Entrypoint
+      let home : (@react_router.RouteProps) -> @react.Element = _props => c(
+        app,
+        { x: 42, items: ["Item 1", "Item 2", "Item 3"] },
+      )
+      let routes = @react_router.create_browser_router([
+        Component(path="/", component=home),
+        Element(
+          path="/about",
+          element=h("div", [
+            "About page",
+            @react_router.link(to="/", ["Go to Top"]),
+          ]),
+        ),
+      ])
+      client.create_root(app_root).render(router_provider(routes))
+    } catch {
+      e => log(e)
+    }
   })
 }

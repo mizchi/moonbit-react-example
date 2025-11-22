@@ -18,5 +18,5 @@ pub fn counter(_ : EmptyProps) -> @react.Element {
     },
     [count],
   )
-  h("button", on_click~, ["Count: \{count}"])
+  @react_element.button(["Count: \{count}"], on_click=on_click)
 }

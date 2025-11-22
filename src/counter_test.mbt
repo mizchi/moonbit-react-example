@@ -1,21 +1,20 @@
 ///|
-using @js {type Val}
+using @react {c, type EmptyProps, init_react_api}
 
 ///|
-using @test {it, before_each}
+using @react_testing_library {render, fireEvent, screen}
 
 ///|
-using @react {h, c, type EmptyProps}
-
-///|
-using @react_testing_library {type ReactTestingLibrary}
+using @global_jsdom {register}
 
 ///|
 test "increment by click" {
-  let { render, fire_event, screen, .. } = ReactTestingLibrary::init()
-  @react.init_react()
-  render(c(counter, EmptyProps::default()))
-  fire_event.click(screen.get_by_text("Count: 0"))
-  let target = screen.get_by_text("Count: 1")
+  register()
+  init_react_api(@node.require("react"))
+  render(c(counter, EmptyProps::default())) |> ignore
+  let scr = screen()
+  let fire = fireEvent()
+  fire.click(scr.getByText("Count: 0"))
+  let target = scr.getByText("Count: 1")
   assert_eq(target.textContent(), "Count: 1")
 }
