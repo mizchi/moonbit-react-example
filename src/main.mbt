@@ -3,7 +3,7 @@ using @react {
   type Context,
   type EmptyProps,
   h,
-  c,
+  component,
   fragment,
   provider,
   use_effect,
@@ -168,12 +168,12 @@ fn app(props : AppProps) -> @react.Element {
         ]),
         ul(
           props.items.mapi((idx, item) => h("li", key=idx.to_string(), [
-            c(item_view, { name: item }, key=idx.to_string()),
+            component(item_view, { name: item }, key=idx.to_string()),
           ])),
         ),
-        c(ctx_consumer, EmptyProps::default()),
-        c(counter, EmptyProps::default()),
-        c(async_counter, EmptyProps::default()),
+        component(ctx_consumer, EmptyProps::default()),
+        component(counter, EmptyProps::default()),
+        component(async_counter, EmptyProps::default()),
         hr(),
         form(
           [
@@ -221,7 +221,7 @@ fn main {
       init_myctx()
 
       // Entrypoint
-      let home : (@react_router.RouteProps) -> @react.Element = _props => c(
+      let home : (@react_router.RouteProps) -> @react.Element = _props => component(
         app,
         { x: 42, items: ["Item 1", "Item 2", "Item 3"] },
       )

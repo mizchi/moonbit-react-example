@@ -1,5 +1,5 @@
 ///|
-using @react {c, type EmptyProps, init_react_api}
+using @react {component, type EmptyProps, init_react_api}
 
 ///|
 using @react_testing_library {render, fireEvent, screen}
@@ -11,7 +11,7 @@ using @global_jsdom {register}
 test "increment by click" {
   register()
   init_react_api(@node.require("react"))
-  render(c(counter, EmptyProps::default())) |> ignore
+  render(component(counter, EmptyProps::default())) |> ignore
   let scr = screen()
   let fire = fireEvent()
   fire.click(scr.getByText("Count: 0"))
