@@ -4,19 +4,19 @@ enum CounterAction {
 }
 
 ///|
-pub fn counter(_ : EmptyProps) -> @react.Element {
-  let (count, dispatch) = use_reducer(
+pub fn counter(_ : Unit) -> @react.Element {
+  let (count, dispatch) = useReducer(
     (state : Int, action : CounterAction) => match action {
       CounterAction::Increment => state + 1
     },
     0,
   )
-  let on_click = use_callback(
+  let on_click = useCallback(
     _ => {
       dispatch(CounterAction::Increment)
       log("Counter clicked: \{count + 1}")
     },
     [count],
   )
-  @react_element.button(["Count: \{count}"], on_click=on_click)
+  @react_element.button(on_click~, ["Count: \{count}"])
 }
