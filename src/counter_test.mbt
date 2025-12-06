@@ -2,7 +2,7 @@
 using @react {component, init_react_api}
 
 ///|
-using @testing_library_react {render, fireEvent, screen}
+using @testing_library_react {render, fireEvent, screen, expect, setup_matchers}
 
 ///|
 using @global_jsdom {register}
@@ -11,9 +11,17 @@ using @global_jsdom {register}
 test "increment by click" {
   register()
   init_react_api(@node.require("react"))
+  setup_matchers()
   render(component(counter, ())) |> ignore
   let scr = screen()
   let fire = fireEvent()
-  fire.click(scr.getByText("Count: 0")) |> ignore
-  scr.getByText("Count: 1") |> ignore
+  let button = scr.getByText("Count: 0")
+  expect(button)
+  ..toBeInTheDocument()
+  ..toHaveTextContent("Count: 0")
+  fire.click(button) |> ignore
+  let incremented = scr.getByText("Count: 1")
+  expect(incremented)
+  ..toBeInTheDocument()
+  ..toHaveTextContent("Count: 1")
 }
