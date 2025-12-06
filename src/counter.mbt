@@ -14,9 +14,9 @@ pub fn counter(_ : Unit) -> @react.Element {
   let on_click = useCallback(
     _ => {
       dispatch(CounterAction::Increment)
-      log("Counter clicked: \{count + 1}")
+      println("Counter clicked: \{count + 1}")
     },
-    [count],
+    [count |> identity],
   )
   @react_element.button(on_click~, ["Count: \{count}"])
 }

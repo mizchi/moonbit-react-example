@@ -1,7 +1,7 @@
 {
   "name": "mizchi/react_sample_app",
   "deps": {
-    "mizchi/js": "0.5.4",
+    "mizchi/js": "0.8.3",
     "moonbitlang/async": "0.14.1"
   },
   "source": "src",

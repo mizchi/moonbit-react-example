@@ -17,7 +17,7 @@ using @react {
 using @react_router {router_provider}
 
 ///|
-using @js {log, identity, sleep, run_async}
+using @js {log, identity, run_async}
 
 ///|
 using @react_element {
@@ -91,14 +91,18 @@ fn async_counter(_ : Unit) -> @react.Element {
   )
   let on_click = useCallback(
     _ => run_async(async fn() noraise {
-      sleep(500)
+      @core.sleep(500)
       @react.startTransition(() => dispatch(CounterAction::Increment))
     }),
-    [count],
+    [count |> identity],
   )
   button(on_click~, [
     "Async Count: \{count}",
-    if is_pending { " (Updating...)" } else { "" },
+    if is_pending {
+      " (Updating...)"
+    } else {
+      ""
+    },
   ])
 }
 
@@ -114,36 +118,36 @@ fn app(props : AppProps) -> @react.Element {
   let textarea_ref : @react.ReactRef[@dom.HTMLTextAreaElement] = @react.useRef(
     None,
   )
-  let handler = useCallback(_ => set_cnt(cnt + 1), [cnt])
+  let handler = useCallback(_ => set_cnt(cnt + 1), [cnt |> @js.any])
   useEffect(
     () => {
-      log("mounted with x = \{props.x}")
-      () => log("unmounted")
+      println("mounted with x = \{props.x}")
+      () => println("unmounted")
     },
-    [cnt, textarea_ref],
+    [cnt |> identity, textarea_ref |> identity],
   )
   useEffect(
     () => {
       run_async(async fn() noraise {
-        sleep(300)
+        @core.sleep(300)
         if textarea_ref.get_current() is Some(textarea) {
-          textarea.focus()
+          textarea.as_html_element().focus()
         }
-        log("Starting async operation...")
+        println("Starting async operation...")
       })
-      () => log("Component unmounted")
+      () => println("Component unmounted")
     },
     [],
   )
   let (input_text, set_text) = useState("")
   let on_change : @dom.ChangeEventHandler = useCallback(
     ev => {
-      let target : @dom.HTMLTextAreaElement = identity(ev.target().to_any())
+      let target : @dom.HTMLTextAreaElement = identity(ev.target())
       let value : String = target.value
       set_text(value)
-      log("Textarea changed: \{value}")
+      println("Textarea changed: \{value}")
     },
-    [input_text],
+    [input_text |> identity],
   )
   guard myctx.val is Some(myctx)
   provider(myctx, value={ v: "xxx" }, [
@@ -162,9 +166,9 @@ fn app(props : AppProps) -> @react.Element {
             id="my-textarea",
             on_change~,
             props={
-              let obj = @js.Object::new()
-              obj.set("rows", 4)
-              obj.set("cols", 40)
+              let obj = @js.new_object()
+              obj["rows"] = 4 |> identity
+              obj["cols"] = 40 |> identity
               obj
             },
             ref_=textarea_ref,
@@ -174,10 +178,9 @@ fn app(props : AppProps) -> @react.Element {
           div(class="textarea-value", ["Textarea value: \{input_text}"]),
         ]),
         ul(
-          props.items.mapi((idx, item) => li(
-            key=idx.to_string(),
-            [component(item_view, { name: item }, key=idx.to_string())],
-          )),
+          props.items.mapi((idx, item) => li(key=idx.to_string(), [
+            component(item_view, { name: item }, key=idx.to_string()),
+          ])),
         ),
         component(ctx_consumer, ()),
         component(counter, ()),
@@ -188,9 +191,9 @@ fn app(props : AppProps) -> @react.Element {
           style={ "marginTop": "10px" },
           enc_type="application/x-www-form-urlencoded",
           action=form => {
-            log(form)
+            log(form |> identity)
             let v : String = form.get("username") |> identity
-            log("Username: \{v}")
+            println("Username: \{v}")
           },
           [
             input(type_="text", name="username"),
