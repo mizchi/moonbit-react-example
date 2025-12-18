@@ -1,5 +1,5 @@
 ///|
-using @react {component, init_react_api}
+using @react {component}
 
 ///|
 using @testing_library_react {render, fireEvent, screen, expect, setup_matchers}
@@ -10,7 +10,6 @@ using @global_jsdom {register}
 ///|
 test "increment by click" {
   register()
-  init_react_api(@node.require("react"))
   setup_matchers()
   render(component(counter, ())) |> ignore
   let scr = screen()
